@@ -26,14 +26,14 @@ Please address each point separately and clearly label your responses.
    - [X] done
 
 4. Integrate multiple LLM APIs:
-   - Set up connections to various LLM APIs (e.g., GPT-3, BERT, RoBERTa) and handle authentication.
+   - Set up connections to various LLM APIs (e.g., GPT-4, Claude3/3.5, Llama) via OpenRouter and handle authentication.
    - using open router this should be relativly simple..
-   - [ ] done
+   - [X] done
 
 5. Develop parallel processing system:
    - Create a mechanism to send multiple requests to different LLMs simultaneously.
    - Maybe we need to determine when to use that and when we need to chain llms
-   - [ ] done
+   - [X] done
 
 6. Build response collection and synthesis module:
    - Develop a system to gather responses from all LLMs and combine them into a coherent output.

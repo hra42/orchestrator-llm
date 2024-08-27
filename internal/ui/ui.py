@@ -1,13 +1,56 @@
+import asyncio
+
 import streamlit as st
 
+from internal.llmintegration.openrouter import run_llm_tasks
 from internal.llmselector.v1 import LLMSelector
 from internal.promptanalyzer.openrouter import OpenRouterPromptAnalyzer
 
 
+async def synthesize_responses(results, synthesis_model):
+    # Prepare the prompt for synthesis
+    synthesis_prompt = "Synthesize the following responses into a coherent summary:\n\n"
+    for result in results:
+        synthesis_prompt += f"Task Type: {result['task']['task_type']}\n"
+        synthesis_prompt += f"Response: {result['response']}\n\n"
+    synthesis_prompt += "Provide a concise, well-structured summary that integrates all the information coherently."
+
+    synthesis_task = {
+        "model": synthesis_model,
+        "messages": [{"role": "user", "content": synthesis_prompt}],
+    }
+
+    synthesis_result = await run_llm_tasks([synthesis_task])
+    return synthesis_result[0]['response'] if synthesis_result[0]['status'] == 'success' else "Synthesis failed"
+
+async def process_prompt(user_prompt, selector):
+    analyzer = OpenRouterPromptAnalyzer()
+    sub_prompts = analyzer.analyze_prompt(user_prompt)
+
+    if sub_prompts:
+        tasks = [
+            {
+                "model": selector.select_llm(sub_prompt["task_type"])[0],
+                "messages": [{"role": "user", "content": sub_prompt["text"]}],
+                "task_type": sub_prompt["task_type"]
+            }
+            for sub_prompt in sub_prompts
+        ]
+
+        results = await run_llm_tasks(tasks, parallel=True)
+
+        # Use an LLM for synthesis
+        synthesis_model = selector.select_llm("synthesize")[0]
+        synthesized_result = await synthesize_responses(results, synthesis_model)
+
+        return results, synthesized_result
+    else:
+        return None, None
+
 def render_main_interface():
     st.title("Orchestrator-LLM")
 
-    # Initialize LLMSelector
+    # Initialize components
     selector = LLMSelector("model_config.json")
 
     # Input section
@@ -18,54 +61,33 @@ def render_main_interface():
     if st.button("Submit"):
         if user_prompt:
             with st.spinner("Processing your request..."):
-                # Analyze the prompt
-                analyzer = OpenRouterPromptAnalyzer()
-                sub_prompts = analyzer.analyze_prompt(user_prompt)
+                try:
+                    # Run the asynchronous processing
+                    results, synthesized_result = asyncio.run(process_prompt(user_prompt, selector))
 
-                if sub_prompts:
-                    task_distribution = analyzer.get_task_distribution(sub_prompts)
+                    if results:
+                        # Display individual LLM results
+                        st.subheader("Individual LLM Results")
+                        for result in results:
+                            with st.expander(f"Task: {result['task']['messages'][0]['content'][:50]}..."):
+                                st.write(f"Model: {result['task']['model']}")
+                                st.write(f"Task Type: {result['task']['task_type']}")
+                                st.write(f"Status: {result['status']}")
+                                if result["status"] == "success":
+                                    st.write(f"Response: {result['response']}")
+                                else:
+                                    st.error(f"Error: {result['error']}")
 
-                    # Display results
-                    st.success("Request processed successfully!")
-                    st.subheader("Prompt Analysis")
-                    st.json(sub_prompts)
+                        # Display synthesized result
+                        st.subheader("Synthesized Result")
+                        st.write(synthesized_result)
 
-                    st.subheader("Task Distribution")
-                    st.bar_chart(task_distribution)
+                    else:
+                        st.error("Failed to analyze the prompt. Please try again.")
 
-                    # Use LLMSelector to distribute tasks
-                    tasks = [
-                        {
-                            "task_type": sub_prompt["task_type"],
-                            "prompt": sub_prompt["text"],
-                        }
-                        for sub_prompt in sub_prompts
-                    ]
-                    distribution = selector.distribute_tasks(tasks)
+                except Exception as e:
+                    st.error(f"An error occurred: {str(e)}")
 
-                    # Display LLM Selection Results
-                    st.subheader("LLM Selection Results")
-                    for model, model_tasks in distribution.items():
-                        st.write(f"**{model}**")
-                        for task in model_tasks:
-                            st.write(f"- Task Type: {task['task_type']}")
-                            st.write(f"  Prompt: {task['prompt']}")
-                        st.write("")
-
-                    # Here we would call the function to process the prompt with selected LLMs
-                    # For now, we'll just display a placeholder result
-                    st.subheader("LLM Results")
-                    st.json(
-                        {
-                            "LLM1": "Sample response from LLM1",
-                            "LLM2": "Sample response from LLM2",
-                            "Synthesized": "Final synthesized response",
-                        }
-                    )
-                else:
-                    st.error(
-                        "Failed to analyze the prompt. Please check the error messages above and try again."
-                    )
         else:
             st.warning("Please enter a prompt before submitting.")
 

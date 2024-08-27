@@ -1,34 +1,65 @@
 {
-  "gpt-3.5-turbo": {
-    "summarize": 0.8,
-    "analyze": 0.7,
+  "anthropic/claude-3-haiku": {
+    "summarize": 0.95,
+    "analyze": 0.92,
     "generate": 0.9,
-    "translate": 0.6,
-    "classify": 0.7,
-    "general": 0.8
+    "translate": 0.85,
+    "classify": 0.88,
+    "synthesize": 0.97,
+    "general": 0.93
   },
-  "claude-3-haiku-20240307": {
-    "summarize": 0.9,
-    "analyze": 0.8,
-    "generate": 0.7,
-    "translate": 0.7,
-    "classify": 0.8,
-    "general": 0.85
+  "anthropic/claude-3.5-sonnet": {
+    "summarize": 0.98,
+    "analyze": 0.97,
+    "generate": 0.96,
+    "translate": 0.92,
+    "classify": 0.95,
+    "synthesize": 0.99,
+    "general": 0.97
   },
-  "GPT-4o Mini": {
-    "summarize": 0.85,
-    "analyze": 0.82,
+  "openai/chatgpt-4o-latest": {
+    "summarize": 0.97,
+    "analyze": 0.98,
+    "generate": 0.98,
+    "translate": 0.94,
+    "classify": 0.96,
+    "synthesize": 0.98,
+    "general": 0.98
+  },
+  "openai/gpt-3.5-turbo-0125": {
+    "summarize": 0.92,
+    "analyze": 0.9,
+    "generate": 0.91,
+    "translate": 0.88,
+    "classify": 0.89,
+    "synthesize": 0.93,
+    "general": 0.91
+  },
+  "meta-llama/llama-3.1-70b-instruct": {
+    "summarize": 0.91,
+    "analyze": 0.89,
+    "generate": 0.9,
+    "translate": 0.85,
+    "classify": 0.87,
+    "synthesize": 0.92,
+    "general": 0.9
+  },
+  "google/gemini-pro": {
+    "summarize": 0.94,
+    "analyze": 0.93,
+    "generate": 0.92,
+    "translate": 0.89,
+    "classify": 0.91,
+    "synthesize": 0.95,
+    "general": 0.93
+  },
+  "mistralai/mistral-7b-instruct": {
+    "summarize": 0.88,
+    "analyze": 0.86,
     "generate": 0.87,
-    "translate": 0.75,
-    "classify": 0.8,
-    "general": 0.82
-  },
-  "Llama 3.1 8B Instruct": {
-    "summarize": 0.7,
-    "analyze": 0.67,
-    "generate": 0.65,
-    "translate": 0.6,
-    "classify": 0.65,
-    "general": 0.67
+    "translate": 0.82,
+    "classify": 0.85,
+    "synthesize": 0.89,
+    "general": 0.87
   }
 }
